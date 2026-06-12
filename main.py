@@ -6,6 +6,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.types import BotCommand, BotCommandScopeDefault
 
 from config import BOT_TOKEN
 from handlers import router as handlers_router
@@ -18,6 +19,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+async def set_commands(bot: Bot):
+    """Set the Telegram menu button commands."""
+    cmds = [
+        BotCommand(command="start", description="🏠 Главное меню"),
+    ]
+    await bot.set_my_commands(cmds, scope=BotCommandScopeDefault())
+
+
 async def main():
     bot = Bot(
         token=BOT_TOKEN,
@@ -26,7 +35,7 @@ async def main():
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(handlers_router)
 
-    # Сначала запускаем шедулер с привязкой к боту
+    await set_commands(bot)
     setup_scheduler(bot)
 
     logger.info("Bot started. Polling...")
