@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 
 async def set_commands(bot: Bot):
     """Set the Telegram menu button commands."""
+    from aiogram.types import BotCommandScopeAllGroupChats, BotCommandScopeChat
+    
     cmds = [
         BotCommand(command="start", description="🏠 Главное меню"),
         BotCommand(command="data", description="📊 Текущие данные"),
@@ -29,7 +31,33 @@ async def set_commands(bot: Bot):
         BotCommand(command="reset", description="🔄 Сбросить данные"),
         BotCommand(command="schedule", description="⏰ Расписание отчётов"),
     ]
-    await bot.set_my_commands(cmds, scope=BotCommandScopeDefault())
+    
+    from config import SALES_GROUP_ID, VADIM_ID
+    
+    try:
+        # Сначала сбрасываем старые команды
+        await bot.delete_my_commands(scope=BotCommandScopeDefault())
+        await bot.delete_my_commands(scope=BotCommandScopeAllGroupChats())
+        await bot.delete_my_commands(scope=BotCommandScopeChat(chat_id=SALES_GROUP_ID))
+        await bot.delete_my_commands(scope=BotCommandScopeChat(chat_id=VADIM_ID))
+        
+        # Ставим для всех (личные чаты)
+        await bot.set_my_commands(cmds, scope=BotCommandScopeDefault())
+        logger.info(f"Default commands set: {[c.command for c in cmds]}")
+        
+        # Ставим для группы продаж
+        await bot.set_my_commands(cmds, scope=BotCommandScopeAllGroupChats())
+        logger.info(f"Group commands set (all groups)")
+        
+        # Ставим конкретно для чата продаж и для Вадима
+        await bot.set_my_commands(cmds, scope=BotCommandScopeChat(chat_id=SALES_GROUP_ID))
+        logger.info(f"Commands set for sales group chat {SALES_GROUP_ID}")
+        
+        await bot.set_my_commands(cmds, scope=BotCommandScopeChat(chat_id=VADIM_ID))
+        logger.info(f"Commands set for Vadim {VADIM_ID}")
+        
+    except Exception as e:
+        logger.error(f"Failed to set commands: {e}", exc_info=True)
 
 
 async def main():
