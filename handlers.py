@@ -99,6 +99,65 @@ async def cmd_start(message: types.Message):
     await message.answer(MAIN_MENU_TEXT, reply_markup=main_menu_kb())
 
 
+@router.message(Command("data"))
+async def cmd_data(message: types.Message):
+    if not _is_vadim(message.from_user.id):
+        return
+    data = load_data()
+    report = format_report(data)
+    await message.answer(report, reply_markup=back_kb("menu_main"))
+
+
+@router.message(Command("edit"))
+async def cmd_edit(message: types.Message):
+    if not _is_vadim(message.from_user.id):
+        return
+    data = load_data()
+    await message.answer(
+        "✏️ **Редактирование данных**\n\nНажми на категорию, чтобы изменить её значение.",
+        reply_markup=edit_kb(data),
+    )
+
+
+@router.message(Command("send"))
+async def cmd_send(message: types.Message):
+    if not _is_vadim(message.from_user.id):
+        return
+    data = load_data()
+    if not has_sales(data):
+        await message.answer(
+            "❌ Нет данных о продажах. Сначала введи их через /edit.",
+            reply_markup=back_kb("menu_main"),
+        )
+        return
+    await message.answer(
+        "📤 Отправить отчёт в группу продаж?",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="✅ Отправить", callback_data="send_confirm")],
+            [InlineKeyboardButton(text="◀️ Назад", callback_data="menu_main")],
+        ]),
+    )
+
+
+@router.message(Command("reset"))
+async def cmd_reset(message: types.Message):
+    if not _is_vadim(message.from_user.id):
+        return
+    do_reset()
+    await message.answer("🔄 Данные сброшены в нули.", reply_markup=back_kb("menu_main"))
+
+
+@router.message(Command("schedule"))
+async def cmd_schedule(message: types.Message):
+    if not _is_vadim(message.from_user.id):
+        return
+    data = load_data()
+    await message.answer(
+        "⏰ **Расписание отчётов**\n\nНажимай 🔘 чтобы включить/выключить слот.",
+        reply_markup=schedule_kb(data),
+    )
+
+
 # ─── MAIN MENU CALLBACKS ──────────────────────────────────
 
 @router.callback_query(F.data == "menu_main")

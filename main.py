@@ -23,6 +23,11 @@ async def set_commands(bot: Bot):
     """Set the Telegram menu button commands."""
     cmds = [
         BotCommand(command="start", description="🏠 Главное меню"),
+        BotCommand(command="data", description="📊 Текущие данные"),
+        BotCommand(command="edit", description="✏️ Править категорию"),
+        BotCommand(command="send", description="📤 Отправить отчёт"),
+        BotCommand(command="reset", description="🔄 Сбросить данные"),
+        BotCommand(command="schedule", description="⏰ Расписание отчётов"),
     ]
     await bot.set_my_commands(cmds, scope=BotCommandScopeDefault())
 
